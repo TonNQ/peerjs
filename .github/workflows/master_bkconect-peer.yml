@@ -21,20 +21,25 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: npm install, build, and test
+      - name: Check for .yarn cache
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
+          if [ -d ".yarn/cache/" ]; then
+            echo ".yarn/cache checked in for 'Zero Installs', pushing cache and not running install.."  
+          elif [ ! -d ".yarn/cache/" ]; then
+            echo ".yarn/cache not found, configuring yarn.."
+            echo "Setting yarn version to stable.."
+            yarn set version stable
+            echo "Checking yarn version.."
+            yarn -v
+            echo "Running yarn install.."
+            yarn install 
+          fi
+          
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,9 +53,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
       
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
