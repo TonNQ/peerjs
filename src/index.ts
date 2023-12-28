@@ -1,3 +1,3 @@
 import { PeerServer } from "peer";
 
-PeerServer({ port: (process.env.PORT || 1337) as number, path: "/" });
+PeerServer({ port: (process.env.PORT || 13337) as number, path: "/" });
